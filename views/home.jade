@@ -1,0 +1,106 @@
+doctype html
+html(lang="en")
+	head
+			meta(name='viewport', content='width=device-width, initial-scale=1')
+			title= title
+			link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" type="text/css")
+			link(rel='stylesheet', href='/css/home.css')
+	body.container
+		block content
+		div.row
+			div.col-md-12
+				button#logoutTrigger(type="button").btn.btn-danger.pull-right
+					span.glyphicon.glyphicon-off logoff
+		div.row
+			div#paginationHolder(data-val="0").col-md-9
+			div#sortHolder.col-md-3
+				div.btn-group.pull-right
+					button(type="button",data-val="0").btn.btn-prinary.sortStr Recent
+					button(type="button", data-toggle="dropdown" data-expanded="false").btn.btn-primary
+						span.caret
+						span.sr-only Toggle Dropdown
+					ul(role="menu").dropdown-menu
+						li
+							a(href="#") Recent
+						li
+							a(href="#") Project Name
+						li
+							a(href="#") User Name
+						li
+							a(href="#") Category name
+			div#dataHolder.row
+				div.table-responsive.col-md-12
+					table.table
+						thead
+							tr
+								th PROJECT NAME
+								th USER NAME
+								th CATEGORY NAME
+						tbody
+		script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js")
+		script(type="text/javascript", src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js")
+		script.
+			$(function(){
+				//get count of total records
+				console.log("Fetching records count");
+				$.ajax({
+					type:'post',
+					dataType:'JSON',
+					url:'/users/getCount',
+					success: function(results){
+						console.log(results);
+						if(results.response){
+							var pageCount = Math.ceil(results.data.count/2);
+							var html = '<ul class="pagination pagination-lg datapagination">';
+							for(var _ix=1; _ix<=pageCount;_ix++){
+								html += "<li><a href='#'>"+_ix+"</a></li>";
+							}
+							html += '</ul>';
+							$("#paginationHolder").html(html);
+							fetchData(0,0);
+						}else{
+							//session might have expired. so, set page to root.
+							window.location.href = '/';
+						}
+					}
+				});
+				$('#sortHolder .dropdown-menu li a').on('click',function(e){
+					$("#sortHolder .sortStr").text($(e.target).text()).data('val',$(e.target).parent().index());
+					fetchData($("#sortHolder .sortStr").data("val"), 0);
+				});
+				$('body').on('click',"#paginationHolder .datapagination a", function(e){
+					$(e.target).parent().data("val", $(e.target).parent().index());
+					fetchData($("#sortHolder .sortStr").data("val"), $(e.target).parent().index());
+				});
+				$("#logoutTrigger").on('click',function(e){
+					$.ajax({
+						type:'post',
+						url:'/users/logout',
+						complete:function(a,b,c){
+							window.location.href = "/";
+						}
+					});
+					window.location.href= "/";
+				});
+
+				function fetchData(orderBy,pageNo){
+					$.ajax({
+						type:'post', 
+						datatype:'json', 
+						url:'/users/getData', 
+						data:{orderBy:orderBy, orderType:'ASC', page: pageNo, limit:2},
+						success: function(results){
+							if(results.response){
+								var html = "";
+								$.each(results.data,function(i,e){
+									html += "<tr><td>"+ e.PROJECT_NAME+"</td><td>"+e.USERNAME+"</td><td>"+e.CATEGORY_NAME+"</td></tr>";
+								});
+								$('#dataHolder tbody').html(html);
+							}else{
+								console.log("No data");
+							}
+						}
+					});
+				}
+			})
+

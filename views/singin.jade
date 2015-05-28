@@ -1,0 +1,15 @@
+doctype html
+html(lang="en")
+	head
+			meta(name='viewport', content='width=device-width, initial-scale=1')
+			title= title
+			link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" type="text/css")
+			link(rel='stylesheet', href='/css/bootstrapSignOn.css') 
+	body
+		block content
+			.container
+				form.form-signin(method="post", action="/users/login")
+					h2.form-signin-heading Please sign in
+					input.form-control(type="text" name="username" placeholder="Username", autofocus="true" required="")
+					input.form-control(type="password" name="password" placeholder="Password" required="")
+					button.btn.btn-lg.btn-primary.btn-block(type="submit") Sing in
